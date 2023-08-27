@@ -1,0 +1,29 @@
+# Binaries, plugins, libs
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with 'go test -c'
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories
+vendor/
+
+# IDE files
+.idea/
+
+# Generated files
+*.gen.go
+
+# Temp files
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+Thumbs.db

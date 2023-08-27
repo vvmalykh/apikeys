@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  app:
+    container_name: app-${PROJECT_PREFIX}-container
+    image: ${PROJECT_PREFIX}-app
+    build: .
+    ports:
+      - "8080:8080"
+  db:
+    container_name: db-${PROJECT_PREFIX}-container
+    image: postgres:15.4
+    environment:
+      POSTGRES_USER: username
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: app_db
+    ports:
+      - "5432:5432"
