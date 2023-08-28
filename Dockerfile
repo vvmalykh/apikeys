@@ -4,9 +4,11 @@ FROM golang:1.21.0 as builder
 # Set the working directory outside $GOPATH to enable the support for modules.
 WORKDIR /app
 
-# Initialize a new module and download dependencies
-RUN go mod init helloworld && \
-    go mod tidy
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download all dependencies.
+RUN go mod download
 
 # Copy only the necessary source code files
 COPY . .
@@ -18,7 +20,7 @@ RUN wget -q -O migrate.linux-amd64.tar.gz https://github.com/golang-migrate/migr
     ls -al /usr/local/bin
 
 # Build the application
-RUN CGO_ENABLED=0 go build -o /bin/api-key-service
+RUN CGO_ENABLED=0 go build -o /bin/api-key-service ./cmd/apikeys
 
 # Use a minimal image to run the service
 FROM alpine:latest
