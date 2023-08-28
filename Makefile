@@ -17,6 +17,7 @@ build:
 	@echo "------ BUILD ------"
 	@$(SERVICES) build --no-cache
 	@make up
+	@make migrate
 
 up:
 	@make down

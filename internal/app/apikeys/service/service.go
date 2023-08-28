@@ -58,6 +58,34 @@ func (h *APIKeyService) GenerateAPIKey() (string, error) {
 	return apiKeyString, nil
 }
 
+func (h *APIKeyService) ValidateAPIKey(apiKeyString string) (bool, error) {
+	hashedKey, err := generateAPIKeyHash(apiKeyString)
+	if err != nil {
+		return false, err
+	}
+
+	var apiKey m.APIKey
+	err = h.DB.QueryRow("SELECT hash, expire_at, is_active, hash_version_id FROM api_keys WHERE hash = $1", hashedKey).Scan(&apiKey.Hash, &apiKey.ExpireAt, &apiKey.IsActive, &apiKey.HashVersionId)
+
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, err
+	}
+
+	if !apiKey.IsActive {
+		return false, nil
+	}
+
+	if time.Now().After(apiKey.ExpireAt) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func generateRandomString(n int) (string, error) {
 	bytes := make([]byte, n)
 	_, err := rand.Read(bytes)
