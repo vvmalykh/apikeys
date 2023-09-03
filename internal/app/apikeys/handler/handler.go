@@ -36,12 +36,11 @@ func (h *APIKeyHandler) GenerateAPIKeyHandler(w http.ResponseWriter, r *http.Req
 	w.Write(response)
 }
 
-// ValidateApiKeyHandler handles the request for validating ApiKey
+// ValidateAPIKeyHandler handles the request for validating ApiKey
 func (h *APIKeyHandler) ValidateAPIKeyHandler(w http.ResponseWriter, r *http.Request) {
 	service := &service.APIKeyService{DB: h.DB}
 	apiKey := r.Header.Get("Authorization")
 
-	// Validate the API key
 	isValid, err := service.ValidateAPIKey(apiKey)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -61,6 +60,42 @@ func (h *APIKeyHandler) ValidateAPIKeyHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	responseJSON, err := json.Marshal(validationResult)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_, err = w.Write(responseJSON)
+	if err != nil {
+		// Handle the error (optional, based on how you want to handle it)
+	}
+}
+
+// DisableAPIKeyHandler handles the request for disabling ApiKey
+func (h *APIKeyHandler) DisableAPIKeyHandler(w http.ResponseWriter, r *http.Request) {
+	service := &service.APIKeyService{DB: h.DB}
+	apiKey := r.Header.Get("Authorization")
+
+	isSuccessfully, err := service.DisableAPIKey(apiKey)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	invalidationResult := m.InvalidationResult{
+		Status:  isSuccessfully,
+		Message: "API key has been disabled",
+	}
+
+	if !isSuccessfully {
+		w.WriteHeader(http.StatusNotFound)
+		invalidationResult.Message = "API key is not found"
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+
+	responseJSON, err := json.Marshal(invalidationResult)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return

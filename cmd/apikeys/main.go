@@ -35,6 +35,7 @@ func main() {
 	// HTTP routes
 	handler := &handler.APIKeyHandler{DB: db}
 	http.HandleFunc("/api/keys/validate", handler.ValidateAPIKeyHandler)
+	http.HandleFunc("/api/keys/disable", handler.DisableAPIKeyHandler)
 	http.HandleFunc("/api/keys/generate", handler.GenerateAPIKeyHandler)
 
 	// Start HTTP server

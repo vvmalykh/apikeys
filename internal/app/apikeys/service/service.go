@@ -65,7 +65,9 @@ func (h *APIKeyService) ValidateAPIKey(apiKeyString string) (bool, error) {
 	}
 
 	var apiKey m.APIKey
-	err = h.DB.QueryRow("SELECT hash, expire_at, is_active, hash_version_id FROM api_keys WHERE hash = $1", hashedKey).Scan(&apiKey.Hash, &apiKey.ExpireAt, &apiKey.IsActive, &apiKey.HashVersionId)
+
+	currentTime := time.Now()
+	err = h.DB.QueryRow("SELECT hash, hash_version_id FROM api_keys WHERE is_active = true and hash = $1 and expire_at > $2", hashedKey, currentTime).Scan(&apiKey.Hash, &apiKey.HashVersionId)
 
 	if err == sql.ErrNoRows {
 		return false, nil
@@ -75,11 +77,27 @@ func (h *APIKeyService) ValidateAPIKey(apiKeyString string) (bool, error) {
 		return false, err
 	}
 
-	if !apiKey.IsActive {
-		return false, nil
+	return true, nil
+}
+
+func (h *APIKeyService) DisableAPIKey(apiKeyString string) (bool, error) {
+	hashedKey, err := generateAPIKeyHash(apiKeyString)
+	if err != nil {
+		return false, err
 	}
 
-	if time.Now().After(apiKey.ExpireAt) {
+	// Execute the SQL statement to update the is_active field
+	result, err := h.DB.Exec("UPDATE api_keys SET is_active = false WHERE hash = $1", hashedKey)
+	if err != nil {
+		return false, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+
+	if rowsAffected == 0 {
 		return false, nil
 	}
 
