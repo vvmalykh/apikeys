@@ -9,7 +9,7 @@ import (
 	"time"
 
 	// Assume you have an import alias for your model package
-	m "apikeys/internal/app/apikeys/model"
+	m "apikeys/internal/app/apikey/model"
 )
 
 type APIKeyService struct {

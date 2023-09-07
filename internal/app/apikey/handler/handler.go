@@ -1,8 +1,8 @@
 package handler
 
 import (
-	m "apikeys/internal/app/apikeys/model"
-	"apikeys/internal/app/apikeys/service"
+	m "apikeys/internal/app/apikey/model"
+	"apikeys/internal/app/apikey/service"
 	"database/sql"
 	"encoding/json"
 	"net/http"

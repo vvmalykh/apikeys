@@ -1,7 +1,8 @@
 package main
 
 import (
-	"apikeys/internal/app/apikeys/handler" // Replace with the actual import path
+	akh "apikeys/internal/app/apikey/handler"
+	rth "apikeys/internal/app/relationtype/handler"
 	"database/sql"
 	"log"
 	"net/http"
@@ -33,14 +34,28 @@ func init() {
 
 func main() {
 	// HTTP routes
-	handler := &handler.APIKeyHandler{DB: db}
-	http.HandleFunc("/api/keys/validate", handler.ValidateAPIKeyHandler)
-	http.HandleFunc("/api/keys/disable", handler.DisableAPIKeyHandler)
-	http.HandleFunc("/api/keys/generate", handler.GenerateAPIKeyHandler)
+	setUpHandlers()
 
 	// Start HTTP server
 	log.Println("Starting API keys service on port 8080...")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Could not start server: %s\n", err)
 	}
+}
+
+func setUpHandlers() {
+	handleApiKeyMethods()
+	handleRelationTypeMethods()
+}
+
+func handleApiKeyMethods() {
+	handler := &akh.APIKeyHandler{DB: db}
+	http.HandleFunc("/api/keys/validate", handler.ValidateAPIKeyHandler)
+	http.HandleFunc("/api/keys/disable", handler.DisableAPIKeyHandler)
+	http.HandleFunc("/api/keys/generate", handler.GenerateAPIKeyHandler)
+}
+
+func handleRelationTypeMethods() {
+	handler := &rth.RelationTypeHandler{DB: db}
+	http.HandleFunc("/api/relation-type/search", handler.GetRelationTypeByName)
 }
