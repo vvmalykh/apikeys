@@ -3,13 +3,15 @@ package service
 import (
 	m "apikeys/internal/app/relationtype/model"
 	"database/sql"
-	"fmt"
+	"errors"
 	"strings"
 )
 
 type RelationService struct {
 	DB *sql.DB
 }
+
+var ErrRelationNotFound = errors.New("relation not found")
 
 func (h *RelationService) GetRelationByName(name string) (*m.RelationType, error) {
 	nameCanonical := strings.ToLower(strings.TrimSpace(name))
@@ -26,7 +28,7 @@ func (h *RelationService) GetRelationByName(name string) (*m.RelationType, error
 		nameCanonical).Scan(&relationType.ID, &relationType.Name, &relationType.NameCanonical, &relationType.Comment)
 
 	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("RelationType with name %s not found", name)
+		return nil, ErrRelationNotFound
 	}
 
 	if err != nil {

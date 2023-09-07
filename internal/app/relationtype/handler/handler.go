@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"apikeys/internal/app/relationtype/service"
+	s "apikeys/internal/app/relationtype/service"
 	"database/sql"
 	"encoding/json"
 	"net/http"
@@ -14,7 +14,7 @@ type RelationTypeHandler struct {
 }
 
 func (h *RelationTypeHandler) GetRelationTypeByName(w http.ResponseWriter, r *http.Request) {
-	service := &service.RelationService{DB: h.DB}
+	service := &s.RelationService{DB: h.DB}
 
 	name := r.URL.Query().Get(nameParam)
 
@@ -26,6 +26,11 @@ func (h *RelationTypeHandler) GetRelationTypeByName(w http.ResponseWriter, r *ht
 	}
 
 	if err != nil {
+		if err == s.ErrRelationNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
