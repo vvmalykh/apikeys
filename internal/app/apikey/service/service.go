@@ -29,10 +29,7 @@ func (h *APIKeyService) GenerateAPIKey() (string, error) {
 		return "", err
 	}
 
-	hashedKey, err := generateAPIKeyHash(apiKeyString)
-	if err != nil {
-		return "", err
-	}
+	hashedKey := generateAPIKeyHash(apiKeyString)
 
 	dateCreated := time.Now()
 	dateExpire := dateCreated.Add(DefaultApiKeyLifeTimeHours * time.Hour)
@@ -59,15 +56,12 @@ func (h *APIKeyService) GenerateAPIKey() (string, error) {
 }
 
 func (h *APIKeyService) ValidateAPIKey(apiKeyString string) (bool, error) {
-	hashedKey, err := generateAPIKeyHash(apiKeyString)
-	if err != nil {
-		return false, err
-	}
+	hashedKey := generateAPIKeyHash(apiKeyString)
 
 	var apiKey m.APIKey
 
 	currentTime := time.Now()
-	err = h.DB.QueryRow("SELECT hash, hash_version_id FROM api_keys WHERE is_active = true and hash = $1 and expire_at > $2", hashedKey, currentTime).Scan(&apiKey.Hash, &apiKey.HashVersionId)
+	err := h.DB.QueryRow("SELECT hash, hash_version_id FROM api_keys WHERE is_active = true and hash = $1 and expire_at > $2", hashedKey, currentTime).Scan(&apiKey.Hash, &apiKey.HashVersionId)
 
 	if err == sql.ErrNoRows {
 		return false, nil
@@ -81,10 +75,7 @@ func (h *APIKeyService) ValidateAPIKey(apiKeyString string) (bool, error) {
 }
 
 func (h *APIKeyService) DisableAPIKey(apiKeyString string) (bool, error) {
-	hashedKey, err := generateAPIKeyHash(apiKeyString)
-	if err != nil {
-		return false, err
-	}
+	hashedKey := generateAPIKeyHash(apiKeyString)
 
 	// Execute the SQL statement to update the is_active field
 	result, err := h.DB.Exec("UPDATE api_keys SET is_active = false WHERE hash = $1", hashedKey)
@@ -113,9 +104,9 @@ func generateRandomString(n int) (string, error) {
 	return base64.URLEncoding.EncodeToString(bytes), nil
 }
 
-func generateAPIKeyHash(apiKeyString string) (string, error) {
+func generateAPIKeyHash(apiKeyString string) string {
 	hashedArray := sha256.Sum256([]byte(apiKeyString))
 	hashedKey := hex.EncodeToString(hashedArray[:])
 
-	return hashedKey, nil
+	return hashedKey
 }
