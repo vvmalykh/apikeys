@@ -1,5 +1,5 @@
 # Use a Golang base image
-FROM golang:1.21.0 as builder
+FROM golang:1.22.5 as builder
 
 # Set the working directory outside $GOPATH to enable the support for modules.
 WORKDIR /app

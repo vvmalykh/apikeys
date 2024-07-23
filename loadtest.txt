@@ -1,0 +1,1 @@
+ seq 10000 | xargs -I {} -P 100 curl -o /dev/null -s -w "Total: %{time_total}s\n" http://localhost:8080/api/keys/generate
